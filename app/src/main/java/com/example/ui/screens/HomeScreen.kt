@@ -13,6 +13,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +28,7 @@ import coil.compose.AsyncImage
 import com.example.ui.components.MainTopAppBar
 import com.example.ui.theme.SecondaryRed
 import com.example.ui.theme.BorderSubtle
+import com.example.R
 
 @Composable
 fun HomeScreen(onNavigateToCatalog: () -> Unit = {}) {
@@ -40,6 +43,7 @@ fun HomeScreen(onNavigateToCatalog: () -> Unit = {}) {
         ) {
             item { HeroSection(onNavigateToCatalog) }
             item { FeaturesSection() }
+            item { ClientsSection() }
             item { FeaturedProductsSection(onNavigateToCatalog = onNavigateToCatalog) }
             item { CtaSection() }
             item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -47,8 +51,34 @@ fun HomeScreen(onNavigateToCatalog: () -> Unit = {}) {
     }
 }
 
+data class SlideData(val imageRes: Int, val title: String, val desc: String)
+
 @Composable
 fun HeroSection(onNavigateToCatalog: () -> Unit = {}) {
+    var currentSlide by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(5000)
+            currentSlide = (currentSlide + 1) % 2
+        }
+    }
+
+    val slides = listOf(
+        SlideData(
+            imageRes = com.example.R.drawable.parahitaprimasentosa,
+            title = "The Real Uniform &\nPromotion",
+            desc = "Solusi terbaik untuk kebutuhan seragam kerja dan media promosi perusahaan Anda."
+        ),
+        SlideData(
+            imageRes = com.example.R.drawable.product_1,
+            title = "Koleksi Seragam\nTerlengkap",
+            desc = "Kualitas jahitan premium dengan pilihan material terbaik demi kenyamanan kerja Anda."
+        )
+    )
+
+    val slide = slides[currentSlide]
+
     BoxWithConstraints {
         val isWide = maxWidth > 600.dp
         Box(
@@ -57,8 +87,8 @@ fun HeroSection(onNavigateToCatalog: () -> Unit = {}) {
                 .aspectRatio(if (isWide) 2.5f else 1.2f)
         ) {
             AsyncImage(
-                model = "https://lh3.googleusercontent.com/aida/ADBb0ug5Pa5hqDNEiKB6ZQiEb1y1e-CjXx6vfCRQMRzZVoOI5V3ziZiyRBWnLxTc8W_M889sG7M6mK6p-xJizNBMRbbSZi-jH2reyYkYAnKq3ejKVjyszfkxUVetazRemRx199D-Y6MSGxCdZ56j1eYW43noPaQwHMf8bxcarwLMLa5-RiwQzRLGhjqzvPEVdYHhFkhs9toCcpbF9a7F8Fn_jHiYkCuTmiXuDU1ldWpyJiU6bX3_yiiFXkUgNgo",
-                contentDescription = "The Real Uniform & Promotion",
+                model = slide.imageRes,
+                contentDescription = slide.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -81,24 +111,47 @@ fun HeroSection(onNavigateToCatalog: () -> Unit = {}) {
                     .fillMaxWidth(if (isWide) 0.6f else 0.9f)
             ) {
                 Text(
-                    text = "The Real Uniform &\nPromotion",
+                    text = slide.title,
                     style = if (isWide) MaterialTheme.typography.displayLarge.copy(color = Color.White) else MaterialTheme.typography.headlineLarge.copy(color = Color.White, fontWeight = FontWeight.Bold)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Solusi terbaik untuk kebutuhan seragam kerja dan media promosi perusahaan Anda.",
+                    text = slide.desc,
                     style = MaterialTheme.typography.bodyLarge.copy(color = Color.White.copy(alpha = 0.9f))
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = onNavigateToCatalog,
-                    colors = ButtonDefaults.buttonColors(containerColor = SecondaryRed),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Jelajahi Produk", color = Color.White, style = MaterialTheme.typography.labelLarge)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                    Button(
+                        onClick = onNavigateToCatalog,
+                        colors = ButtonDefaults.buttonColors(containerColor = SecondaryRed),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
+                    ) {
+                        Text("Jelajahi Produk", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(end = 12.dp)
+                    ) {
+                        slides.forEachIndexed { index, _ ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .size(8.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        if (index == currentSlide) Color.White else Color.White.copy(alpha = 0.5f)
+                                    )
+                                    .clickable { currentSlide = index }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -138,7 +191,7 @@ fun FeaturesSection() {
                         FeatureCard(
                             title = "Berpengalaman",
                             description = "Bertahun-tahun menangani klien korporasi dengan standar tinggi.",
-                            iconUrl = "https://lh3.googleusercontent.com/aida/ADBb0uiHdYpAoqcacrTNokQguY82XU_fGWA12FQPdTGnA3xsMz945M8DT03qw7G3oNp3OLdHHblf5El2ckvy4BkZoQILPuYGNVJbCflM7xpWWWkkdL4qryqXeDqyXTnXYpdNz7ydPXsOey6stBdRciqEPL7nCUT_WvSAaQxJwSG4nOTRd_ChmiGzEkngU_4jNd2XtDjHKHRDowexKYZ9dXh_P5B_5WSMBHiLCxPd37MmFIz35kpJcbiky6OmVDg",
+                            iconRes = com.example.R.drawable.p1,
                             isHorizontal = false
                         )
                     }
@@ -146,7 +199,7 @@ fun FeaturesSection() {
                         FeatureCard(
                             title = "Kualitas Premium",
                             description = "Material pilihan & jahitan rapi.",
-                            iconUrl = "https://lh3.googleusercontent.com/aida/ADBb0uhnk_EBAL04byr3mTgRCpZs8WAOwf5IXG9YcMqt6BFRFV_rmvjg-WfrYONV5LsRQCe5BDEBDE-JMkPwVYLSvAHXEIW3WowHQXvbDY6cTaFnqF1dIp7MWmWpDIS3DpTyJF7T8rBiI5cq7ys6kuvb535pFAkZZw6Yir8bS2Qcxdnn774fbIr3lJkB_tQe3L9pPzQt7l6ao8PSU0o-A2uiZU9UKbY24w2y-kdqL76s7FpN_BLIa8sjln71Mw",
+                            iconRes = com.example.R.drawable.p2,
                             isHorizontal = false
                         )
                     }
@@ -154,7 +207,7 @@ fun FeaturesSection() {
                         FeatureCard(
                             title = "Tepat Waktu",
                             description = "Manajemen produksi efisien & akurat.",
-                            iconUrl = "https://lh3.googleusercontent.com/aida/ADBb0ugZ42bhZXfhji15qj_02fy1wGfk-SrMrc2gwoLeJA4iM7VMx6ItmGepnnRI9V5xM23fWKjbty7Xpt739rWwJ5eJ0UZ3FPXm1BBaGtCjXhORZHLEjBouQHWqhF6CoYAs8ral8Exf6kbp6WYm94B6BG4hd6gIHmtH8P1f2ST_CxD89UTbMxFStutRyCW2-6IO8SqcRTCt22nQ4Ov4TEDBUV_GWNAFhcT1iM4xET7pvhI7zU7Apn6CtCZ3Ig",
+                            iconRes = com.example.R.drawable.p3,
                             isHorizontal = false
                         )
                     }
@@ -164,7 +217,7 @@ fun FeaturesSection() {
                     FeatureCard(
                         title = "Berpengalaman",
                         description = "Bertahun-tahun menangani klien korporasi dengan standar tinggi.",
-                        iconUrl = "https://lh3.googleusercontent.com/aida/ADBb0uiHdYpAoqcacrTNokQguY82XU_fGWA12FQPdTGnA3xsMz945M8DT03qw7G3oNp3OLdHHblf5El2ckvy4BkZoQILPuYGNVJbCflM7xpWWWkkdL4qryqXeDqyXTnXYpdNz7ydPXsOey6stBdRciqEPL7nCUT_WvSAaQxJwSG4nOTRd_ChmiGzEkngU_4jNd2XtDjHKHRDowexKYZ9dXh_P5B_5WSMBHiLCxPd37MmFIz35kpJcbiky6OmVDg",
+                        iconRes = com.example.R.drawable.p1,
                         isHorizontal = true
                     )
                     Row(
@@ -175,7 +228,7 @@ fun FeaturesSection() {
                             FeatureCard(
                                 title = "Kualitas Premium",
                                 description = "Material pilihan & jahitan rapi.",
-                                iconUrl = "https://lh3.googleusercontent.com/aida/ADBb0uhnk_EBAL04byr3mTgRCpZs8WAOwf5IXG9YcMqt6BFRFV_rmvjg-WfrYONV5LsRQCe5BDEBDE-JMkPwVYLSvAHXEIW3WowHQXvbDY6cTaFnqF1dIp7MWmWpDIS3DpTyJF7T8rBiI5cq7ys6kuvb535pFAkZZw6Yir8bS2Qcxdnn774fbIr3lJkB_tQe3L9pPzQt7l6ao8PSU0o-A2uiZU9UKbY24w2y-kdqL76s7FpN_BLIa8sjln71Mw",
+                                iconRes = com.example.R.drawable.p2,
                                 isHorizontal = false
                             )
                         }
@@ -183,7 +236,7 @@ fun FeaturesSection() {
                             FeatureCard(
                                 title = "Tepat Waktu",
                                 description = "Manajemen produksi efisien & akurat.",
-                                iconUrl = "https://lh3.googleusercontent.com/aida/ADBb0ugZ42bhZXfhji15qj_02fy1wGfk-SrMrc2gwoLeJA4iM7VMx6ItmGepnnRI9V5xM23fWKjbty7Xpt739rWwJ5eJ0UZ3FPXm1BBaGtCjXhORZHLEjBouQHWqhF6CoYAs8ral8Exf6kbp6WYm94B6BG4hd6gIHmtH8P1f2ST_CxD89UTbMxFStutRyCW2-6IO8SqcRTCt22nQ4Ov4TEDBUV_GWNAFhcT1iM4xET7pvhI7zU7Apn6CtCZ3Ig",
+                                iconRes = com.example.R.drawable.p3,
                                 isHorizontal = false
                             )
                         }
@@ -195,7 +248,7 @@ fun FeaturesSection() {
 }
 
 @Composable
-fun FeatureCard(title: String, description: String, iconUrl: String, isHorizontal: Boolean) {
+fun FeatureCard(title: String, description: String, iconRes: Int, isHorizontal: Boolean) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
@@ -209,7 +262,7 @@ fun FeatureCard(title: String, description: String, iconUrl: String, isHorizonta
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AsyncImage(
-                    model = iconUrl,
+                    model = iconRes,
                     contentDescription = title,
                     modifier = Modifier.size(72.dp).clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
@@ -227,7 +280,7 @@ fun FeatureCard(title: String, description: String, iconUrl: String, isHorizonta
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = iconUrl,
+                    model = iconRes,
                     contentDescription = title,
                     modifier = Modifier.fillMaxWidth().aspectRatio(1.5f).clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
@@ -241,13 +294,116 @@ fun FeatureCard(title: String, description: String, iconUrl: String, isHorizonta
     }
 }
 
-data class ProductInfo(val category: String, val title: String, val imageUrl: String, val isNew: Boolean = false)
+data class ProductInfo(val category: String, val title: String, val imageRes: Int, val isNew: Boolean = false)
 
 val sampleProducts = listOf(
-    ProductInfo("WORKWEAR", "Kemeja Drill Premium", "https://lh3.googleusercontent.com/aida-public/AB6AXuCswrAQCQdxlnPxkA_IM9tpu-f3lrt8hzChocwCTJ-wazjWF5NiZfSvk1W0p5yiFHoEMVverKkVP69TCvgamMC6jNo2sRC1l13HIOH0goMyfdL8VQukXeSPEu3kQvu9OnEf4K7eHjgjEadsOcJZwJ2_XyYOWjWB-Ytb5DRErGNwoqinqicYD2Kjx3etDMVH3p82buXgyRY9BDxc3PbUw5Syhg49ISpdkyc_bKEHRg0c08r8AH1UVB_HAToNRY11cfR5WdxGYcRv_-8"),
-    ProductInfo("PROMOTION", "Polo Shirt Lacoste", "https://lh3.googleusercontent.com/aida-public/AB6AXuDDyE6a7yRcc3s1BrHz8Stx2KufirLWtYi1UeP80GT3iLTUy-e3XS-VVyOFQnL_OpTN4aHjC_lK92bRJU2FkP8QnElKEK5OYslKD2n1R4ROyq9QnaCRf4ssgT0FcF8wz4Pk4qq5PG8ncWOodWcUMs9aOXftybjKZNLGBZ0h1N9Pl15T8em-ubdx0Xa3VurGvAQzUUg_9mn015PEQ-Qe45E13TbGl7MaNmD1RnixQQfZvGgSeiUrVEzUXmXjtFdS9F1EQHsuu_AYEwA", isNew = true),
-    ProductInfo("INDUSTRIAL", "Jaket Safety Pro", "https://lh3.googleusercontent.com/aida-public/AB6AXuACNLqNnh8GjSujiA797pOicpz4aydnDsSrVWTBkHXbux2BEU1aXPJSiAh5FEeFXmeSrwsfW1zXEuEacA4aG_K2tuYmPYqvc-QaZtEHwuv4oNdlXZLqb3G7vpuufPeZBryh_OzB8Joq_d3c0cVtm4F4BhSq22ULtz-hY2H3BKMZA_C4E-omQ6CfI1idNN2Lxpp5Ka2NKM4UEW-o1iuNyoEeI0yXwXbufvB5HdcJ2ZK64S8XBzWXXF699OOnxIHnXlCm4nraM6YNiJc")
+    ProductInfo("RETAIL", "Seragam Alfamart", R.drawable.alfa2, isNew = true),
+    ProductInfo("ENERGY", "Kemeja Pertamina", R.drawable.pertamina3),
+    ProductInfo("HOSPITALITY", "Seragam The Langham", R.drawable.langham1, isNew = true),
+    ProductInfo("RETAIL", "Kemeja Dan+Dan", R.drawable.dandan),
+    ProductInfo("ENERGY", "Seragam SPBU Shell", R.drawable.shell),
+    ProductInfo("CONSTRUCTION", "Pakaian Dinas Waskita", R.drawable.waskita, isNew = true),
+    ProductInfo("RETAIL", "Polo Transmart", R.drawable.transmart2)
 )
+
+data class ClientInfo(val name: String, val logoRes: Int, val description: String)
+
+val clientList = listOf(
+    ClientInfo("PT Pertamina", R.drawable.pertamina3, "Energi & SPBU"),
+    ClientInfo("Shell Indonesia", R.drawable.shell, "Energi & Retail"),
+    ClientInfo("Alfamart", R.drawable.alfa2, "Retail Minimarket"),
+    ClientInfo("Transmart", R.drawable.transmart, "Retail Supermarket"),
+    ClientInfo("Waskita Karya", R.drawable.waskita, "Konstruksi & PDL"),
+    ClientInfo("The Langham", R.drawable.langham1, "Hospitality Bintang 5"),
+    ClientInfo("Dan+Dan", R.drawable.dandan, "Health & Beauty Retail"),
+    ClientInfo("MK Kontraktor", R.drawable.mk1, "Manajemen Konstruksi")
+)
+
+@Composable
+fun ClientsSection() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Klien & Mitra Kami",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Box(
+                modifier = Modifier
+                    .padding(top = 8.dp, bottom = 12.dp)
+                    .height(4.dp)
+                    .width(48.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(SecondaryRed)
+            )
+            Text(
+                text = "Dipercaya oleh berbagai korporasi terkemuka di tanah air",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(bottom = 20.dp)
+            )
+        }
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(clientList) { client ->
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, BorderSubtle),
+                    modifier = Modifier.width(140.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AsyncImage(
+                            model = client.logoRes,
+                            contentDescription = client.name,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = client.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Text(
+                            text = client.description,
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = androidx.compose.ui.unit.TextUnit.Unspecified),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun FeaturedProductsSection(onNavigateToCatalog: () -> Unit = {}) {
@@ -298,7 +454,7 @@ fun ProductCard(product: ProductInfo) {
                     .background(Color(0xFFeceef0))
             ) {
                 AsyncImage(
-                    model = product.imageUrl,
+                    model = product.imageRes,
                     contentDescription = product.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -20,18 +22,33 @@ import coil.compose.AsyncImage
 import com.example.ui.components.MainTopAppBar
 import com.example.ui.theme.SecondaryRed
 import com.example.ui.theme.BorderSubtle
+import com.example.R
 
-data class CatalogItem(val category: String, val title: String, val desc: String, val imageUrl: String)
+data class CatalogItem(val category: String, val title: String, val desc: String, val imageRes: Int)
 
 val catalogItems = listOf(
-    CatalogItem("INDUSTRIAL", "Seragam Tambang", "Material drill berkualitas tinggi dengan fitur tahan panas dan visibilitas tinggi untuk keamanan pekerja lapangan.", "https://lh3.googleusercontent.com/aida/ADBb0ugr-SozJzeThDVPA2vHrSrXlc2DBTsv6jHWoDK67t9X3b56sLt_yIaArMrkR6MqBiFkPk2DTPOX2dP4GKb-kz1UjBA0KHSMgyVDRWX_Qc38yGQya54UAwVKL4ErvA2wpgw6UxjHJ0do24f4QM1LGuoGenP7bzLxBaDKGTzXZEBLN8nIdNJnBVpv_lhQxhxaOhdQsS7BbnZgJ-4dep5Rjh_Ft-CpJIqEbLRzH9jEM8_vegMWaAygNJcygg0"),
-    CatalogItem("AUTOMOTIVE", "Seragam Otomotif", "Desain ergonomis yang memudahkan pergerakan teknisi dengan bahan yang menyerap keringat dan tidak mudah sobek.", "https://lh3.googleusercontent.com/aida/ADBb0uidy1DTs1jcAaq54yI3FT9Qf-uDzYeb_c61-KyzWNmHuI7Eh-RZkcQL39SYQZZtAKYdNAST1BVyCBMCLhpcTQFM9b44lpKbn1PcRBaL4UiiAPWoR21YVGL7lYhJgf3HYEYhp1bXwtBYM4NSShzySYord2_1tS3LA4RB_rgdfOm0pja-k7AdVhYdmFx7QdBuknheOnGrd0sPfbXUJ30ImHwFUOPLqllSatvKJkwrFpBfZYZo5hhlHl742so"),
-    CatalogItem("HOSPITALITY", "Seragam Waralaba", "Tampilan bersih dan rapi untuk staf frontliner. Pilihan bahan katun premium yang nyaman digunakan sepanjang hari.", "https://lh3.googleusercontent.com/aida/ADBb0uj27mr1ggZ7htrMERCVoBV7qHeoMpunQEJCEfef5ED7lSLl5rY9nV6PDlReOio206MeAfvvtGALF1mVf7N8eVLdSB68xV5xC2A-Tl6XXNlvdBF0elLlf9dJFJIM9BgHaWekgIq9fdtBxXLzsJauVlnrs2394Rj_MxHpC4i6jaAZiuhi9rZvP7KqzgCg0123V1Dr4ITqx49dhl4WY_wWqAjvU5d2XHf0zjWRKurlARvy92ZzKxp8BWd0pfE")
+    CatalogItem("RETAIL", "Kemeja Dan+Dan", "Seragam kasual dan dinamis untuk kru Dan+Dan, fleksibel untuk mobilitas tinggi.", R.drawable.dandan),
+    CatalogItem("RETAIL", "Polo Shirt Dan+Dan", "Polo shirt nyaman untuk aktivitas outlet Dan+Dan.", R.drawable.dandan2),
+    CatalogItem("RETAIL", "Seragam Alfamart", "Seragam pramuniaga Alfamart, nyaman dan menyerap keringat.", R.drawable.alfa2),
+    CatalogItem("RETAIL", "Kemeja Transmart", "Kemeja karyawan area retail The Transmart.", R.drawable.transmart),
+    CatalogItem("RETAIL", "Polo Transmart", "Seragam polo untuk karyawan harian Transmart.", R.drawable.transmart2),
+    CatalogItem("HOSPITALITY", "Seragam The Langham", "Seragam elegan eksklusif untuk staf hotel The Langham.", R.drawable.langham1),
+    CatalogItem("HOSPITALITY", "Blazer The Langham", "Blazer untuk manajemen level bintang 5 di The Langham.", R.drawable.langham2),
+    CatalogItem("HOSPITALITY", "Kemeja Front Office", "Kemeja formal dengan standar pelayanan The Langham.", R.drawable.langham3),
+    CatalogItem("ENERGY", "Seragam SPBU Shell", "Seragam operasional material anti-statis standar HSE.", R.drawable.shell),
+    CatalogItem("ENERGY", "Kemeja SPBU", "Kemeja lengkap dengan visibilitas ekstra untuk SHELL.", R.drawable.shell1_new),
+    CatalogItem("ENERGY", "Kemeja Supervisor Shell", "Seragam supervisor lapangan dengan detail tangguh.", R.drawable.shell2),
+    CatalogItem("ENERGY", "Kemeja Pertamina", "Kemeja SPBU Pertamina dengan fitur nyaman berdurabilitas tinggi.", R.drawable.pertamina3),
+    CatalogItem("CONSTRUCTION", "Pakaian Dinas Waskita", "Pakaian lapangan (PDL) Waskita tangguh ekstra aman.", R.drawable.waskita),
+    CatalogItem("CONSTRUCTION", "Seragam Proyek", "Seragam teknisi bangunan Waskita fungsional tinggi.", R.drawable.waskita2),
+    CatalogItem("CONSTRUCTION", "Kemeja MK", "Seragam pengawas konstruksi untuk manajemen proyek MK.", R.drawable.mk1)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogScreen() {
+    var selectedCategory by androidx.compose.runtime.mutableStateOf("Semua")
+    val filteredItems = if (selectedCategory == "Semua") catalogItems else catalogItems.filter { it.category == selectedCategory }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,14 +76,14 @@ fun CatalogScreen() {
             }
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val categories = listOf("Semua", "Tambang", "Otomotif", "Waralaba", "Medis")
+                    val categories = listOf("Semua", "RETAIL", "HOSPITALITY", "ENERGY", "CONSTRUCTION", "BEAUTY RETAIL")
                     items(categories) { category ->
-                        val isSelected = category == "Semua"
+                        val isSelected = category == selectedCategory
                         Surface(
                             shape = RoundedCornerShape(percent = 50),
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                             border = if (!isSelected) BorderStroke(1.dp, BorderSubtle) else null,
-                            onClick = {}
+                            onClick = { selectedCategory = category }
                         ) {
                             Text(
                                 text = category,
@@ -78,7 +95,7 @@ fun CatalogScreen() {
                     }
                 }
             }
-            items(catalogItems) { item ->
+            items(filteredItems) { item ->
                 CatalogCard(item)
             }
         }
@@ -101,7 +118,7 @@ fun CatalogCard(item: CatalogItem) {
                     .background(Color(0xFFeceef0))
             ) {
                 AsyncImage(
-                    model = item.imageUrl,
+                    model = item.imageRes,
                     contentDescription = item.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
