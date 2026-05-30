@@ -38,7 +38,7 @@ fun HomeScreen(onNavigateToCatalog: () -> Unit = {}) {
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            item { HeroSection() }
+            item { HeroSection(onNavigateToCatalog) }
             item { FeaturesSection() }
             item { FeaturedProductsSection(onNavigateToCatalog = onNavigateToCatalog) }
             item { CtaSection() }
@@ -48,7 +48,7 @@ fun HomeScreen(onNavigateToCatalog: () -> Unit = {}) {
 }
 
 @Composable
-fun HeroSection() {
+fun HeroSection(onNavigateToCatalog: () -> Unit = {}) {
     BoxWithConstraints {
         val isWide = maxWidth > 600.dp
         Box(
@@ -70,9 +70,7 @@ fun HeroSection() {
                             colors = listOf(
                                 Color.Transparent,
                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
-                            ),
-                            startY = 0f,
-                            endY = Float.POSITIVE_INFINITY
+                            )
                         )
                     )
             )
@@ -93,7 +91,7 @@ fun HeroSection() {
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = { },
+                    onClick = onNavigateToCatalog,
                     colors = ButtonDefaults.buttonColors(containerColor = SecondaryRed),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
@@ -135,7 +133,7 @@ fun FeaturesSection() {
 
         BoxWithConstraints {
             if (maxWidth > 600.dp) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Box(modifier = Modifier.weight(1f)) {
                         FeatureCard(
                             title = "Berpengalaman",
@@ -202,6 +200,7 @@ fun FeatureCard(title: String, description: String, iconUrl: String, isHorizonta
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, BorderSubtle),
         modifier = Modifier.fillMaxWidth()
     ) {
         if (isHorizontal) {
@@ -212,8 +211,8 @@ fun FeatureCard(title: String, description: String, iconUrl: String, isHorizonta
                 AsyncImage(
                     model = iconUrl,
                     contentDescription = title,
-                    modifier = Modifier.size(64.dp),
-                    contentScale = ContentScale.Fit
+                    modifier = Modifier.size(72.dp).clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
@@ -230,10 +229,10 @@ fun FeatureCard(title: String, description: String, iconUrl: String, isHorizonta
                 AsyncImage(
                     model = iconUrl,
                     contentDescription = title,
-                    modifier = Modifier.size(64.dp),
-                    contentScale = ContentScale.Fit
+                    modifier = Modifier.fillMaxWidth().aspectRatio(1.5f).clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
